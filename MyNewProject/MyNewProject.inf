@@ -1,0 +1,89 @@
+;
+; MyNewProject.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=XnaComposite
+ClassGuid={d61ca365-5af4-4486-998b-9db4734c6ca3}
+Provider=%ManufacturerName%
+CatalogFile=MyNewProject.cat
+DriverVer=29/05/2017,1.0
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=XnaComposite_AddReg
+
+[XnaComposite_AddReg]
+HKR,,,,%ClassName%
+HKR,,NoInstallClass,,1
+HKR,,Icon,0x00010000,"%%SystemRoot%%\System32\setupapi.dll,-40"
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+MyNewProject.sys  = 1
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%MyNewProject.DeviceDesc%=MyNewProject_Device, Root\MyNewProject ; TODO: edit hw-id
+
+[MyNewProject_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+MyNewProject.sys
+
+;-------------- Service installation
+[MyNewProject_Device.NT.Services]
+AddService = MyNewProject,0, MyNewProject_Service_Inst,
+AddService=mshidkmdf,0x00000002,mshidkmdf_Service_Inst
+
+; -------------- MyNewProject driver install sections
+[MyNewProject_Service_Inst]
+DisplayName    = %MyNewProject.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\MyNewProject.sys
+
+[mshidkmdf_Service_Inst]
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\mshidkmdf.sys
+
+;
+;--- MyNewProject_Device Coinstaller installation ------
+;
+
+[MyNewProject_Device.NT.CoInstallers]
+AddReg=MyNewProject_AddReg
+
+[MyNewProject_AddReg]
+HKR,,"LowerFilters",0x00010008, "MyNewProject"
+
+
+[MyNewProject_Device.NT.Wdf]
+KmdfService =  MyNewProject, MyNewProject_wdfsect
+[MyNewProject_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Chanwoo Song>"
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "MyNewProject Installation Disk"
+MyNewProject.DeviceDesc = "MyNewProject Device"
+MyNewProject.SVCDESC = "MyNewProject Service"
