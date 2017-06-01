@@ -1,0 +1,90 @@
+;
+; MyNewProject.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=HIDClass
+ClassGuid={745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Provider=%ManufacturerName%
+CatalogFile=MyNewProject.cat
+DriverVer=29/05/2017,1.0
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+; ================= Class section =====================
+
+[ClassInstall]
+Addreg=HIDClassReg
+
+[HIDClassReg]
+HKR,,,,%ClassName%
+HKR,,Icon,,-20
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+MyNewProject.sys  = 1
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%MyNewProject.DeviceDesc%=MyNewProject_Device,  BTHLEDevice\{00001812-0000-1000-8000-00805f9b34fb}_Dev_VID&010104)PID&0100_REV&0100
+%MyNewProject.DeviceDesc%=MyNewProject_Device,  BTHLEDevice\{00001812-0000-1000-8000-00805f9b34fb}_Dev_VID&010104)PID&0100
+%MyNewProject.DeviceDesc%=MyNewProject_Device,  BTHLEDevice\{00001812-0000-1000-8000-00805f9b34fb}_LOCALMFG&001d
+
+[MyNewProject_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+MyNewProject.sys
+
+;-------------- Service installation
+[MyNewProject_Device.NT.Services]
+AddService = MyNewProject,0, MyNewProject_Service_Inst,
+AddService=mshidkmdf,0x00000002,mshidkmdf_Service_Inst
+
+; -------------- MyNewProject driver install sections
+[MyNewProject_Service_Inst]
+DisplayName    = %MyNewProject.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\MyNewProject.sys
+
+[mshidkmdf_Service_Inst]
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 3                  ; SERVICE_DEMAND_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\mshidkmdf.sys
+
+;
+;--- MyNewProject_Device Coinstaller installation ------
+;
+
+[MyNewProject_Device.NT.CoInstallers]
+AddReg=MyNewProject_AddReg
+
+[MyNewProject_AddReg]
+HKR,,"LowerFilters",0x00010008, "MyNewProject"
+
+
+[MyNewProject_Device.NT.Wdf]
+KmdfService =  MyNewProject, MyNewProject_wdfsect
+[MyNewProject_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Chanwoo Song>"
+ClassName="HID" ; TODO: edit ClassName
+DiskName = "MyNewProject Installation Disk"
+MyNewProject.DeviceDesc = "MyNewProject Device"
+MyNewProject.SVCDESC = "MyNewProject Service"
